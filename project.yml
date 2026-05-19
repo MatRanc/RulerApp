@@ -13,8 +13,8 @@ targets:
     info:
       path: Sources/RulerApp/Info.plist
       properties:
-        CFBundleName: $(PRODUCT_NAME)
-        CFBundleDisplayName: RulerApp
+        CFBundleName: Ruler App
+        CFBundleDisplayName: Ruler App
         NSHumanReadableCopyright: ""
     settings:
       base:

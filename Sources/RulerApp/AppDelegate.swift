@@ -20,7 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             object: nil
         )
 
-        let flow = CalibrationFlow { [weak self] in
+        let flow = CalibrationFlow(parentWindow: window) { [weak self] in
             self?.window?.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
         }
@@ -46,7 +46,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             backing: .buffered,
             defer: false
         )
-        win.title = "RulerApp"
+        win.title = "Ruler App"
         win.minSize = NSSize(width: 240, height: 180)
         win.collectionBehavior.insert(.fullScreenPrimary)
         win.isReleasedWhenClosed = false
@@ -107,7 +107,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func triggerRecalibration() {
         guard let screen = window?.screen ?? NSScreen.main else { return }
-        let flow = CalibrationFlow { [weak self] in
+        let flow = CalibrationFlow(parentWindow: window) { [weak self] in
             guard let self else { return }
             self.state.pointsPerMm = DisplayMetrics.effectivePointsPerMm(for: screen)
             self.window?.makeKeyAndOrderFront(nil)
