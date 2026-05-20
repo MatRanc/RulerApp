@@ -96,9 +96,9 @@ struct RulerView: View {
             drawImperialLeft(into: &context, height: size.height, ppm: ppm, xOffset: 0)
         case .both:
             drawMetricTop(into: &context, width: size.width, ppm: ppm, yOffset: 0)
-            drawImperialTop(into: &context, width: size.width, ppm: ppm, yOffset: 22)
+            drawImperialTop(into: &context, width: size.width, ppm: ppm, yOffset: 30)
             drawMetricLeft(into: &context, height: size.height, ppm: ppm, xOffset: 0)
-            drawImperialLeft(into: &context, height: size.height, ppm: ppm, xOffset: 22)
+            drawImperialLeft(into: &context, height: size.height, ppm: ppm, xOffset: 30)
         }
     }
 
