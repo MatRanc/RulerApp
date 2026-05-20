@@ -8,13 +8,11 @@ struct RulerView: View {
     var body: some View {
         let ppm = state.pointsPerMm
         let unit = state.unit
-        let grid = state.showGrid
+        let gridMode = state.gridMode
 
         ZStack(alignment: .topLeading) {
             Canvas { context, size in
-                if grid {
-                    drawGrid(into: &context, size: size, pointsPerMm: ppm)
-                }
+                drawGrid(into: &context, size: size, pointsPerMm: ppm, mode: gridMode)
                 drawRulers(into: &context, size: size, pointsPerMm: ppm, unit: unit)
             }
             .background(Color(nsColor: .windowBackgroundColor))
@@ -60,16 +58,20 @@ struct RulerView: View {
 
     // MARK: - Controls strip
 
+    private var gridButtonLabel: String {
+        switch state.gridMode {
+        case .off: return "Grid"
+        case .major: return "Grid •"
+        case .majorAndMinor: return "Grid ••"
+        }
+    }
+
     private var controls: some View {
         HStack(spacing: 6) {
             Button(state.unit.label) { state.unit = state.unit.next }
                 .help("Toggle unit (U)")
-            Toggle("Grid", isOn: Binding(
-                get: { state.showGrid },
-                set: { state.showGrid = $0 }
-            ))
-            .toggleStyle(.button)
-            .help("Toggle grid (G)")
+            Button(gridButtonLabel) { state.gridMode = state.gridMode.next }
+                .help("Cycle grid: off → major → major + minor (G)")
             Button("Calibrate") { onCalibrate() }
                 .help("Recalibrate this display (C)")
         }
@@ -186,15 +188,35 @@ struct RulerView: View {
 
     // MARK: Grid
 
-    private func drawGrid(into context: inout GraphicsContext, size: CGSize, pointsPerMm ppm: CGFloat) {
-        let step = 10 * ppm
-        let shading = GraphicsContext.Shading.color(.secondary.opacity(0.4))
+    private func drawGrid(into context: inout GraphicsContext, size: CGSize, pointsPerMm ppm: CGFloat, mode: RulerGridMode) {
+        guard mode.showsMajor else { return }
+
+        if mode.showsMinor {
+            drawGridLines(
+                into: &context,
+                size: size,
+                step: ppm,
+                shading: .color(.secondary.opacity(0.15)),
+                lineWidth: 0.5
+            )
+        }
+
+        drawGridLines(
+            into: &context,
+            size: size,
+            step: 10 * ppm,
+            shading: .color(.secondary.opacity(0.4)),
+            lineWidth: 0.5
+        )
+    }
+
+    private func drawGridLines(into context: inout GraphicsContext, size: CGSize, step: CGFloat, shading: GraphicsContext.Shading, lineWidth: CGFloat) {
         var v = step
         while v < size.width {
             var path = Path()
             path.move(to: CGPoint(x: v, y: 0))
             path.addLine(to: CGPoint(x: v, y: size.height))
-            context.stroke(path, with: shading, lineWidth: 0.5)
+            context.stroke(path, with: shading, lineWidth: lineWidth)
             v += step
         }
         var h = step
@@ -202,7 +224,7 @@ struct RulerView: View {
             var path = Path()
             path.move(to: CGPoint(x: 0, y: h))
             path.addLine(to: CGPoint(x: size.width, y: h))
-            context.stroke(path, with: shading, lineWidth: 0.5)
+            context.stroke(path, with: shading, lineWidth: lineWidth)
             h += step
         }
     }

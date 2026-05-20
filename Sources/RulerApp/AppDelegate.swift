@@ -93,7 +93,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             state.unit = state.unit.next
             return true
         case 5: // G
-            state.showGrid.toggle()
+            state.gridMode = state.gridMode.next
             return true
         case 8: // C
             triggerRecalibration()
