@@ -12,7 +12,7 @@ struct RulerView: View {
 
         ZStack(alignment: .topLeading) {
             Canvas { context, size in
-                drawGrid(into: &context, size: size, pointsPerMm: ppm, mode: gridMode)
+                drawGrid(into: &context, size: size, pointsPerMm: ppm, unit: unit, mode: gridMode)
                 drawRulers(into: &context, size: size, pointsPerMm: ppm, unit: unit)
             }
             .background(Color(nsColor: .windowBackgroundColor))
@@ -188,14 +188,24 @@ struct RulerView: View {
 
     // MARK: Grid
 
-    private func drawGrid(into context: inout GraphicsContext, size: CGSize, pointsPerMm ppm: CGFloat, mode: RulerGridMode) {
+    private func drawGrid(into context: inout GraphicsContext, size: CGSize, pointsPerMm ppm: CGFloat, unit: RulerUnit, mode: RulerGridMode) {
         guard mode.showsMajor else { return }
+
+        let (majorStep, minorStep): (CGFloat, CGFloat) = {
+            switch unit {
+            case .inches:
+                let inch = ppm * 25.4
+                return (inch, inch / 8)            // 1" major, 1/8" minor
+            case .mmcm, .both:
+                return (10 * ppm, ppm)             // 10mm major, 1mm minor
+            }
+        }()
 
         if mode.showsMinor {
             drawGridLines(
                 into: &context,
                 size: size,
-                step: ppm,
+                step: minorStep,
                 shading: .color(.secondary.opacity(0.15)),
                 lineWidth: 0.5
             )
@@ -204,7 +214,7 @@ struct RulerView: View {
         drawGridLines(
             into: &context,
             size: size,
-            step: 10 * ppm,
+            step: majorStep,
             shading: .color(.secondary.opacity(0.4)),
             lineWidth: 0.5
         )
