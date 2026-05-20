@@ -12,6 +12,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         buildMainWindow()
         installKeyMonitor()
+        hideUnusedAppMenuItems()
 
         NotificationCenter.default.addObserver(
             self,
@@ -72,6 +73,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard let win = note.object as? NSWindow, win === window else { return }
         guard let screen = win.screen else { return }
         state.pointsPerMm = DisplayMetrics.effectivePointsPerMm(for: screen)
+    }
+
+    /// SwiftUI's `Settings { ... }` scene always adds a "Settings…" item to the app menu,
+    /// but Ruler App has no settings. Hide it so users don't open an empty window.
+    private func hideUnusedAppMenuItems() {
+        guard let appMenu = NSApp.mainMenu?.item(at: 0)?.submenu else { return }
+        for item in appMenu.items
+        where item.title.localizedStandardContains("Settings")
+            || item.title.localizedStandardContains("Preferences") {
+            item.isHidden = true
+        }
     }
 
     // MARK: - Hotkeys
