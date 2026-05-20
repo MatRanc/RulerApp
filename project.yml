@@ -21,6 +21,7 @@ targets:
         LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
         NSHumanReadableCopyright: "Copyright © 2026 Mathieu Rancourt. All rights reserved."
         NSHighResolutionCapable: true
+        ITSAppUsesNonExemptEncryption: false
     entitlements:
       path: Sources/RulerApp/RulerApp.entitlements
       properties:
