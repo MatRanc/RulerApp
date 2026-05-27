@@ -20,13 +20,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             name: NSWindow.didChangeScreenNotification,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(screenParametersChanged),
+            name: NSApplication.didChangeScreenParametersNotification,
+            object: nil
+        )
 
-        let flow = CalibrationFlow(parentWindow: window) { [weak self] in
-            self?.window?.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
-        }
-        flow.startLaunchFlow(screens: NSScreen.screens)
-        calibrationFlow = flow
+        promptForNewDisplays()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -75,6 +76,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         state.pointsPerMm = DisplayMetrics.effectivePointsPerMm(for: screen)
     }
 
+    /// Fires on display connect/disconnect and resolution changes. Refresh the current
+    /// scale and offer calibration for any display we haven't seen before.
+    @objc private func screenParametersChanged(_ note: Notification) {
+        if let screen = window?.screen ?? NSScreen.main {
+            state.pointsPerMm = DisplayMetrics.effectivePointsPerMm(for: screen)
+        }
+        promptForNewDisplays()
+    }
+
+    // MARK: - Calibration
+
+    /// Prompt for calibration on first run or whenever a new display appears.
+    /// No-op while a calibration flow is already on screen.
+    private func promptForNewDisplays() {
+        guard calibrationFlow == nil else { return }
+        let flow = CalibrationFlow(parentWindow: window) { [weak self] in
+            guard let self else { return }
+            if let screen = self.window?.screen ?? NSScreen.main {
+                self.state.pointsPerMm = DisplayMetrics.effectivePointsPerMm(for: screen)
+            }
+            self.window?.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            self.calibrationFlow = nil
+        }
+        calibrationFlow = flow
+        flow.startFlowForNewDisplays(screens: NSScreen.screens)
+    }
+
     /// SwiftUI's `Settings { ... }` scene always adds a "Settings…" item to the app menu,
     /// but Ruler App has no settings. Hide it so users don't open an empty window.
     private func hideUnusedAppMenuItems() {
@@ -118,14 +147,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Recalibration
 
     private func triggerRecalibration() {
+        guard calibrationFlow == nil else { return }
         guard let screen = window?.screen ?? NSScreen.main else { return }
         let flow = CalibrationFlow(parentWindow: window) { [weak self] in
             guard let self else { return }
             self.state.pointsPerMm = DisplayMetrics.effectivePointsPerMm(for: screen)
             self.window?.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
+            self.calibrationFlow = nil
         }
-        flow.recalibrate(screen: screen)
         calibrationFlow = flow
+        flow.recalibrate(screen: screen)
     }
 }

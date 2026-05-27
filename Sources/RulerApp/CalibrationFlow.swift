@@ -12,20 +12,24 @@ final class CalibrationFlow {
         self.onComplete = onComplete
     }
 
-    /// Start the launch-time flow: prompt the user, then walk through any uncalibrated screens.
-    func startLaunchFlow(screens: [NSScreen]) {
-        let uncalibrated = screens.filter { CalibrationStore.pointsPerMm(for: $0) == nil }
-        guard !uncalibrated.isEmpty else {
+    /// Prompt for any displays we haven't offered calibration for yet, then walk through them.
+    /// Runs at launch and whenever a new display is connected; already-seen displays
+    /// (calibrated or previously skipped) are left alone.
+    func startFlowForNewDisplays(screens: [NSScreen]) {
+        let newScreens = screens.filter { !CalibrationStore.isKnown($0) }
+        guard !newScreens.isEmpty else {
             onComplete()
             return
         }
-        showPrompt(targetScreen: uncalibrated.first ?? NSScreen.main ?? screens[0],
-                   uncalibratedCount: uncalibrated.count) { [weak self] calibrate in
+        showPrompt(targetScreen: newScreens.first ?? NSScreen.main ?? screens[0],
+                   uncalibratedCount: newScreens.count) { [weak self] calibrate in
             guard let self else { return }
             if calibrate {
-                self.pending = uncalibrated
+                self.pending = newScreens
                 self.advance()
             } else {
+                // Remember them so we don't ask again next launch.
+                newScreens.forEach(CalibrationStore.markKnown)
                 self.finish()
             }
         }
@@ -68,6 +72,7 @@ final class CalibrationFlow {
             finish()
             return
         }
+        CalibrationStore.markKnown(screen)
         let label = screenLabel(for: screen, indexHint: pending.count)
         let saved = CalibrationStore.pointsPerMm(for: screen)
         let initial = saved ?? DisplayMetrics.pointsPerMillimeter(for: screen)

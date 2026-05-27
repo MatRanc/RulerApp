@@ -13,8 +13,8 @@ targets:
     info:
       path: Sources/RulerApp/Info.plist
       properties:
-        CFBundleName: Ruler App
-        CFBundleDisplayName: Ruler App
+        CFBundleName: RulerApp
+        CFBundleDisplayName: RulerApp
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSApplicationCategoryType: public.app-category.utilities
