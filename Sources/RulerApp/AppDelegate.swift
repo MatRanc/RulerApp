@@ -48,7 +48,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             backing: .buffered,
             defer: false
         )
-        win.title = "Ruler App"
+        win.title = "RulerApp"
         win.minSize = NSSize(width: 240, height: 180)
         win.collectionBehavior.insert(.fullScreenPrimary)
         win.isReleasedWhenClosed = false

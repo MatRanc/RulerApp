@@ -63,7 +63,7 @@ final class CalibrationFlow {
             rootView: AnyView(view),
             contentSize: CGSize(width: 440, height: 220),
             on: targetScreen,
-            title: "Ruler App"
+            title: "RulerApp"
         )
     }
 
