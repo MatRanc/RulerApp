@@ -10,9 +10,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
 
+        buildMainMenu()
         buildMainWindow()
         installKeyMonitor()
-        hideUnusedAppMenuItems()
 
         NotificationCenter.default.addObserver(
             self,
@@ -37,6 +37,74 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         if let m = keyMonitor { NSEvent.removeMonitor(m) }
         NotificationCenter.default.removeObserver(self)
+    }
+
+    // MARK: - Menu
+
+    /// With the AppKit entry point there is no SwiftUI `App` to build the menu bar,
+    /// so we construct a minimal standard one. There is intentionally no
+    /// Settings/Preferences item — the app has no persistent preferences.
+    private func buildMainMenu() {
+        let appName = "RulerApp"
+        let mainMenu = NSMenu()
+
+        let appItem = NSMenuItem()
+        mainMenu.addItem(appItem)
+        let appMenu = NSMenu()
+        appItem.submenu = appMenu
+        appMenu.addItem(
+            withTitle: "About \(appName)",
+            action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
+            keyEquivalent: ""
+        )
+        appMenu.addItem(.separator())
+        appMenu.addItem(
+            withTitle: "Hide \(appName)",
+            action: #selector(NSApplication.hide(_:)),
+            keyEquivalent: "h"
+        )
+        let hideOthers = appMenu.addItem(
+            withTitle: "Hide Others",
+            action: #selector(NSApplication.hideOtherApplications(_:)),
+            keyEquivalent: "h"
+        )
+        hideOthers.keyEquivalentModifierMask = [.command, .option]
+        appMenu.addItem(
+            withTitle: "Show All",
+            action: #selector(NSApplication.unhideAllApplications(_:)),
+            keyEquivalent: ""
+        )
+        appMenu.addItem(.separator())
+        appMenu.addItem(
+            withTitle: "Quit \(appName)",
+            action: #selector(NSApplication.terminate(_:)),
+            keyEquivalent: "q"
+        )
+
+        let windowItem = NSMenuItem()
+        mainMenu.addItem(windowItem)
+        let windowMenu = NSMenu(title: "Window")
+        windowItem.submenu = windowMenu
+        windowMenu.addItem(
+            withTitle: "Minimize",
+            action: #selector(NSWindow.performMiniaturize(_:)),
+            keyEquivalent: "m"
+        )
+        windowMenu.addItem(
+            withTitle: "Zoom",
+            action: #selector(NSWindow.performZoom(_:)),
+            keyEquivalent: ""
+        )
+        windowMenu.addItem(.separator())
+        let fullScreen = windowMenu.addItem(
+            withTitle: "Enter Full Screen",
+            action: #selector(NSWindow.toggleFullScreen(_:)),
+            keyEquivalent: "f"
+        )
+        fullScreen.keyEquivalentModifierMask = [.command, .control]
+
+        NSApp.mainMenu = mainMenu
+        NSApp.windowsMenu = windowMenu
     }
 
     // MARK: - Window
@@ -102,17 +170,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         calibrationFlow = flow
         flow.startFlowForNewDisplays(screens: NSScreen.screens)
-    }
-
-    /// SwiftUI's `Settings { ... }` scene always adds a "Settings…" item to the app menu,
-    /// but Ruler App has no settings. Hide it so users don't open an empty window.
-    private func hideUnusedAppMenuItems() {
-        guard let appMenu = NSApp.mainMenu?.item(at: 0)?.submenu else { return }
-        for item in appMenu.items
-        where item.title.localizedStandardContains("Settings")
-            || item.title.localizedStandardContains("Preferences") {
-            item.isHidden = true
-        }
     }
 
     // MARK: - Hotkeys
