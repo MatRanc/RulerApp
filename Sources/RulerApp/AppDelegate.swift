@@ -52,11 +52,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         mainMenu.addItem(appItem)
         let appMenu = NSMenu()
         appItem.submenu = appMenu
-        appMenu.addItem(
+        let about = appMenu.addItem(
             withTitle: "About \(appName)",
-            action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
+            action: #selector(showAboutPanel(_:)),
             keyEquivalent: ""
         )
+        about.target = self
         appMenu.addItem(.separator())
         appMenu.addItem(
             withTitle: "Hide \(appName)",
@@ -105,6 +106,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         NSApp.mainMenu = mainMenu
         NSApp.windowsMenu = windowMenu
+    }
+
+    @objc private func showAboutPanel(_ sender: Any?) {
+        let credits = NSAttributedString(
+            string: "Made in 🇨🇦 with ❤️",
+            attributes: [
+                .font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize),
+                .foregroundColor: NSColor.secondaryLabelColor,
+            ]
+        )
+        NSApp.orderFrontStandardAboutPanel(options: [.credits: credits])
     }
 
     // MARK: - Window
