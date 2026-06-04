@@ -4,6 +4,7 @@ import SwiftUI
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let state = RulerState()
     private var window: NSWindow?
+    private var aboutWindow: NSWindow?
     private var keyMonitor: Any?
     private var calibrationFlow: CalibrationFlow?
 
@@ -109,14 +110,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func showAboutPanel(_ sender: Any?) {
-        let credits = NSAttributedString(
-            string: "Made in 🇨🇦 with ❤️",
-            attributes: [
-                .font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize),
-                .foregroundColor: NSColor.secondaryLabelColor,
-            ]
-        )
-        NSApp.orderFrontStandardAboutPanel(options: [.credits: credits])
+        if aboutWindow == nil {
+            let win = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 300, height: 320),
+                styleMask: [.titled, .closable],
+                backing: .buffered,
+                defer: false
+            )
+            win.title = "About RulerApp"
+            win.isReleasedWhenClosed = false
+            win.contentView = NSHostingView(rootView: AboutView())
+            win.center()
+            aboutWindow = win
+        }
+        aboutWindow?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     // MARK: - Window
