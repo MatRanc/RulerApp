@@ -2,6 +2,8 @@
 
 A macOS ruler app. Put a physical object against the screen and read its dimensions off the ruler. Resize the window to whatever you need; click the green button to go fullscreen for measuring larger things.
 
+<img src="docs/screenshot.png" width="100%" />
+
 ## Build & run
 
 ```
