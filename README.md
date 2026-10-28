@@ -27,3 +27,7 @@ The same actions are available as buttons in the bottom-right corner.
 ## Calibration
 
 On first launch you'll be walked through calibration for any uncalibrated displays. Hold a credit card (long edge, 85.6 mm) flush against the on-screen line and drag the slider until they match. Calibration is stored per display (keyed by `CGDisplayCreateUUIDFromDisplayID`) and picked up automatically when you move the window between displays. Hit **Calibrate** in the controls strip (or **C**) any time to redo it.
+
+## License
+
+[GNU Affero General Public License v3.0 with Apple App Store Exception](LICENSE)
